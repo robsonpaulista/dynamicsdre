@@ -1,0 +1,135 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  
+  body {
+    @apply bg-[#F5F5F5] text-text-primary font-sans antialiased;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+  
+  .dark body {
+    @apply bg-dark-background text-dark-text-primary;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  
+  /* Cores da paleta DynamicsADM */
+  .bg-teal {
+    @apply bg-[#00B299];
+  }
+  
+  .text-teal {
+    @apply text-[#00B299];
+  }
+  
+  .border-teal {
+    @apply border-[#00B299];
+  }
+  
+  .bg-orange {
+    @apply bg-[#FF8C00];
+  }
+  
+  .text-orange {
+    @apply text-[#FF8C00];
+  }
+  
+  .border-orange {
+    @apply border-[#FF8C00];
+  }
+  
+  .shadow-glow {
+    box-shadow: 0 0 20px rgba(0, 178, 153, 0.15);
+  }
+  
+  .shadow-glow-lg {
+    box-shadow: 0 0 30px rgba(0, 178, 153, 0.25);
+  }
+}
+
+/* Animação: dados fluindo da tabela para o agente */
+@keyframes agent-pull-data {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0) scale(0.5);
+  }
+  15% {
+    opacity: 1;
+    transform: translate(0, 0) scale(1);
+  }
+  85% {
+    opacity: 0.9;
+    transform: translate(var(--agent-dx, 50vw), var(--agent-dy, -15vh)) scale(0.8);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--agent-dx, 50vw), var(--agent-dy, -15vh)) scale(0.3);
+  }
+}
+
+@keyframes agent-glow-pulse {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(0, 178, 153, 0.3), 0 0 40px rgba(0, 178, 153, 0.15);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(0, 178, 153, 0.5), 0 0 60px rgba(0, 178, 153, 0.2);
+  }
+}
+
+@keyframes agent-float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+/* Resposta do analista: Markdown (tabelas, títulos) – formato fixo, sem quebra */
+.analyst-markdown table {
+  @apply border-collapse text-left text-sm;
+  table-layout: auto;
+  width: max-content;
+  min-width: 100%;
+}
+.analyst-markdown th,
+.analyst-markdown td {
+  @apply border border-border dark:border-dark-border px-3 py-2 font-normal;
+  white-space: nowrap;
+}
+.analyst-markdown th {
+  @apply bg-background-soft dark:bg-dark-primary-surface font-semibold;
+}
+.analyst-markdown h3 {
+  @apply mt-4 mb-2 text-base font-semibold text-text-primary dark:text-dark-text-primary;
+}
+.analyst-markdown p {
+  @apply my-2;
+}
+.analyst-markdown ul,
+.analyst-markdown ol {
+  @apply my-2 pl-6;
+}
+.analyst-markdown strong {
+  @apply font-semibold;
+}
