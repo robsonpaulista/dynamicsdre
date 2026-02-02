@@ -10,7 +10,7 @@
   }
   
   body {
-    @apply bg-[#F5F5F5] text-text-primary font-sans antialiased;
+    @apply bg-background-soft text-text-primary font-sans antialiased;
     transition: background-color 0.3s ease, color 0.3s ease;
   }
   
@@ -33,38 +33,45 @@
     display: none;
   }
   
-  /* Cores da paleta DynamicsADM */
-  .bg-teal {
-    @apply bg-[#00B299];
+  /* Paleta DesignHire: laranja vibrante */
+  .bg-accent-orange {
+    @apply bg-[#F97316];
   }
-  
-  .text-teal {
-    @apply text-[#00B299];
+  .text-accent-orange {
+    @apply text-[#F97316];
   }
-  
-  .border-teal {
-    @apply border-[#00B299];
+  .border-accent-orange {
+    @apply border-[#F97316];
   }
-  
-  .bg-orange {
-    @apply bg-[#FF8C00];
-  }
-  
-  .text-orange {
-    @apply text-[#FF8C00];
-  }
-  
-  .border-orange {
-    @apply border-[#FF8C00];
-  }
-  
   .shadow-glow {
-    box-shadow: 0 0 20px rgba(0, 178, 153, 0.15);
+    box-shadow: 0 0 20px rgba(249, 115, 22, 0.25);
   }
-  
   .shadow-glow-lg {
-    box-shadow: 0 0 30px rgba(0, 178, 153, 0.25);
+    box-shadow: 0 0 30px rgba(249, 115, 22, 0.3);
   }
+
+  /* Navbar: modo escuro = fundo escuro (DesignHire); modo claro = fundo claro, mesma paleta */
+  .navbar-gradient {
+    background: linear-gradient(180deg, #ffffff 0%, #fafafa 50%, #f5f5f5 100%);
+  }
+  .dark .navbar-gradient {
+    background: linear-gradient(180deg, #1a1a1a 0%, #2d2d2d 50%, #262626 100%);
+  }
+}
+
+/* Destaque sutil no ícone do agente (navbar) */
+@keyframes agent-navbar-pulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.2);
+  }
+  50% {
+    transform: scale(1.06);
+    box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.12);
+  }
+}
+.animate-agent-navbar-pulse {
+  animation: agent-navbar-pulse 2.5s ease-in-out infinite;
 }
 
 /* Animação: dados fluindo da tabela para o agente */
@@ -89,10 +96,10 @@
 
 @keyframes agent-glow-pulse {
   0%, 100% {
-    box-shadow: 0 0 20px rgba(0, 178, 153, 0.3), 0 0 40px rgba(0, 178, 153, 0.15);
+    box-shadow: 0 0 20px rgba(249, 115, 22, 0.35), 0 0 40px rgba(249, 115, 22, 0.15);
   }
   50% {
-    box-shadow: 0 0 30px rgba(0, 178, 153, 0.5), 0 0 60px rgba(0, 178, 153, 0.2);
+    box-shadow: 0 0 30px rgba(249, 115, 22, 0.5), 0 0 60px rgba(249, 115, 22, 0.2);
   }
 }
 

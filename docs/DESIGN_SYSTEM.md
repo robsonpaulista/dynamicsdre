@@ -8,68 +8,56 @@
 - **Modernidade**: Interface atual e premium
 - **Eficiência**: Decisões rápidas em menos de 30 segundos
 
-## 🎨 Paleta de Cores
+## 🎨 Paleta de Cores — Dourado (copilot 2026 / 86Dynamics)
 
 ### Modo Claro (Light Mode)
 
 #### Cores Principais
-- **Primary**: `#0F2A44` - Azul Executivo
-  - Uso: Elementos principais, títulos importantes
-  - Hover: `#123A5F`
-  
-- **Secondary**: `#2E7BEF` - Azul Médio
-  - Uso: Destaques, ações secundárias, links
+- **Primary**: `#C6A15B` - Dourado fosco (accent-gold)
+  - Uso: Ícones, bordas, CTAs, destaque
+  - Hover: `#A68347`
+- **Primary Soft**: `#E8D9B8` - Dourado claro
+  - Uso: Backgrounds suaves, hover
 
 #### Cores de Fundo
 - **Background**: `#FFFFFF` - Branco puro
-- **Background Soft**: `#F5F7FA` - Cinza muito claro
-  - Uso: Fundo de seções, espaçamento visual
+- **Background Soft**: `#F7F4EF` - Bege premium (bg-app)
+  - Uso: Fundo geral da aplicação
 
 #### Cores de Texto
-- **Text Primary**: `#0F172A` - Quase preto
+- **Text Primary**: `#1C1C1C` - Preto suave
   - Uso: Títulos, valores importantes
-- **Text Secondary**: `#475569` - Cinza médio
-  - Uso: Labels, descrições, textos secundários
+- **Text Secondary**: `#6B6B6B` - Cinza
+  - Uso: Labels, descrições
 
 #### Cores de Status
-- **Success**: `#1E9E6A` - Verde
-  - Uso: Valores positivos, receitas
-- **Warning**: `#F59E0B` - Âmbar
-  - Uso: Atenção, valores negativos moderados
-- **Danger**: `#DC2626` - Vermelho (uso mínimo)
-  - Uso: Apenas para alertas críticos
+- **Success**: `#2E7D32` - Verde
+- **Warning**: `#C77800` - Laranja moderado
+- **Danger**: `#9F2A2A` - Vermelho controlado
 
-#### Bordas e Divisores
-- **Border**: `#E5E7EB` - Cinza claro
-  - Uso: Bordas de cards, divisores
+#### Bordas
+- **Border**: `#E5DED4` - Cinza suave (border-card)
 
 ---
 
 ### Modo Escuro (Dark Mode)
 
 #### Cores Principais
-- **Primary**: `#0B1F2A` - Azul Petróleo
-- **Primary Surface**: `#102A3A` - Superfície primária
-- **Secondary**: `#1E3A5F` - Azul Profundo
-- **Accent**: `#5B9BFF` - Azul Claro
-  - Uso: Destaques, elementos interativos
+- **Primary**: `#D4AF37` - Dourado mais brilhante
+- **Primary Surface**: `#2d2d2d`
+- **Accent**: `#E8D9B8` - Dourado claro
 
 #### Cores de Fundo
-- **Background**: `#0A0F14` - Preto azulado
-- **Card Background**: `#111827` - Cinza escuro
-  - Uso: Cards e superfícies elevadas
+- **Background**: `#1a1a1a`
+- **Card**: `#2d2d2d`
 
 #### Cores de Texto
-- **Text Primary**: `#F8FAFC` - Branco suave
-- **Text Secondary**: `#CBD5E1` - Cinza claro
+- **Text Primary**: `#f5f5f5`
+- **Text Secondary**: `#c0c0c0`
 
 #### Cores de Status
-- **Success**: `#22C55E` - Verde claro
-- **Warning**: `#FBBF24` - Amarelo
-- **Danger**: `#F87171` - Vermelho suave
-
-#### Bordas
-- **Border**: `#1F2937` - Cinza escuro sutil
+- **Success**: `#22c55e` • **Warning**: `#f59e0b` • **Danger**: `#ef4444`
+- **Border**: `#404040`
 
 ---
 

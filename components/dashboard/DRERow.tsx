@@ -122,10 +122,11 @@ interface DRERowProps {
   getTypeStyles: () => string
   getValueStyles: (value: number) => string
   variationHighlights?: VariationHighlight[]
+  expenseSearch?: string
   initialExpanded?: boolean
 }
 
-export function DRERow({ item, sheets, receitaPorMes, level = 0, index = 0, getTypeStyles, getValueStyles, variationHighlights, initialExpanded }: DRERowProps) {
+export function DRERow({ item, sheets, receitaPorMes, level = 0, index = 0, getTypeStyles, getValueStyles, variationHighlights, expenseSearch, initialExpanded }: DRERowProps) {
   // Despesas Fixas/Variáveis (COD 8) e Participações (COD 12) começam recolhidos; demais níveis raiz expandidos
   const startsExpanded = (level < 1 && item.codPlanoconta !== '8' && item.codPlanoconta !== '12') || !!initialExpanded
   const [isExpanded, setIsExpanded] = useState(startsExpanded)
@@ -191,15 +192,14 @@ export function DRERow({ item, sheets, receitaPorMes, level = 0, index = 0, getT
           isSubtotal && 'font-semibold'
         )}
       >
-        {/* Plano de Contas - fundo sólido e z-index alto para não ser coberto ao rolar */}
+        {/* Plano de Contas — largura fixa para alinhar ao cabeçalho */}
         <td className={cn(
-          'px-4 py-3 sticky left-0 z-30 w-[250px] transition-colors',
-          'shadow-[4px_0_6px_-2px_rgba(0,0,0,0.06)] dark:shadow-[4px_0_6px_-2px_rgba(0,0,0,0.25)]',
+          'px-4 py-3 w-[280px] min-w-[280px] transition-colors',
           level > 0 
             ? 'bg-background-soft dark:bg-dark-primary-surface' 
             : 'bg-background dark:bg-dark-card'
         )}>
-          <div className="flex items-center gap-2" style={{ paddingLeft: `${level * 24}px` }}>
+          <div className="flex items-center gap-2" style={{ paddingLeft: `${level * 20}px` }}>
             {hasChildren && (
               <button
                 onClick={() => setIsExpanded(!isExpanded)}
@@ -214,14 +214,17 @@ export function DRERow({ item, sheets, receitaPorMes, level = 0, index = 0, getT
               </button>
             )}
             {!hasChildren && level > 0 && (
-              <span className="w-5 flex-shrink-0" /> // Espaço para alinhamento
+              <span className="w-5 flex-shrink-0" />
             )}
-            <span className={cn(
-              'text-xs whitespace-nowrap',
-              isSubtotal && 'font-semibold',
-              level === 0 && 'font-semibold',
-              getTypeStyles()
-            )}>
+            <span
+              className={cn(
+                'text-xs',
+                isSubtotal && 'font-semibold',
+                level === 0 && 'font-semibold',
+                getTypeStyles()
+              )}
+              title={item.plano || item.codPlanoconta}
+            >
               {item.plano || item.codPlanoconta}
             </span>
           </div>
@@ -446,7 +449,8 @@ export function DRERow({ item, sheets, receitaPorMes, level = 0, index = 0, getT
           getTypeStyles={getTypeStyles}
           getValueStyles={getValueStyles}
           variationHighlights={variationHighlights}
-          initialExpanded={!!(variationHighlights?.length && child.codPlanoconta.startsWith('8.'))}
+          expenseSearch={expenseSearch}
+          initialExpanded={!!((variationHighlights?.length || expenseSearch?.trim()) && child.codPlanoconta.startsWith('8.'))}
         />
       ))}
       
@@ -459,10 +463,12 @@ export function DRERow({ item, sheets, receitaPorMes, level = 0, index = 0, getT
             setSelectedMonth(null)
           }}
           title={`${item.plano || item.codPlanoconta} - Lançamentos (${formatMonthName(selectedMonth)})`}
+          headerVariant="primary"
         >
           <div className="space-y-3">
             {item.lancamentos!
               .filter(lanc => lanc.data === selectedMonth)
+              .sort((a, b) => a.valor - b.valor)
               .map((lanc, idx) => (
                 <div 
                   key={idx} 

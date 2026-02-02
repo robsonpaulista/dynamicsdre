@@ -34,9 +34,9 @@ export function DREChart({ data, type }: DREChartProps) {
   
   const textColor = isDark ? '#CBD5E1' : '#475569'
   const gridColor = isDark ? '#1F2937' : '#E5E7EB'
-  const primaryColor = isDark ? '#5B9BFF' : '#2E7BEF'
+  const primaryColor = '#F97316' // Laranja vibrante (mesma paleta em ambos os modos)
   const successColor = isDark ? '#22C55E' : '#1E9E6A'
-  const expenseColor = isDark ? '#FBBF24' : '#F59E0B'
+  const expenseColor = isDark ? '#F97316' : '#EA580C'
   
   interface TooltipProps {
     active?: boolean

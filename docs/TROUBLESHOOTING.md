@@ -175,6 +175,31 @@ Veja a documentação completa: [docs/ESTRUTURA_PLANILHA.md](ESTRUTURA_PLANILHA.
 
 ---
 
+## ⏱️ Erro: "Limite de uso da IA atingido" (Groq 429)
+
+### Por que acontece?
+
+A Groq aplica limites por **tokens por minuto (TPM)** e **requisições por minuto (RPM)** no plano gratuito. Cada pergunta ao Analista DRE envia todo o contexto da DRE (~3–5 mil tokens), então o limite é atingido bem mais rápido do que em um chat simples que envia apenas a pergunta.
+
+**Se você usa outra app com a mesma chave Groq:** os limites são **compartilhados por organização**. Usar a DRE e outro app em paralelo consome o mesmo pool — e a DRE usa mais tokens por pergunta.
+
+### O que foi feito na aplicação
+
+1. **Contexto reduzido** – limite de ~6.500 caracteres para consumir menos tokens.
+2. **Retry automático** – ao receber 429, o backend aguarda os segundos indicados e tenta novamente uma vez.
+
+### Opções se o limite continuar atrapalhando
+
+1. **Chaves separadas** – use uma conta/chave Groq só para a DRE, se possível.
+2. **Plano pago** – Groq oferece Developer tier com limites maiores.
+3. **Aumentar contexto (plano pago)** – no `.env.local`:
+   ```env
+   GROQ_MAX_CONTEXT=9000
+   ```
+4. **Evitar uso simultâneo** – feche a outra app que usa Groq enquanto usa o Analista DRE.
+
+---
+
 ## 🔍 Debug Avançado
 
 ### Ver Logs Detalhados

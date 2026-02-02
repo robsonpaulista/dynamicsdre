@@ -11,25 +11,28 @@ import type { VariationHighlight } from '@/types/dre'
 
 export default function Home() {
   const [year, setYear] = useState(2025)
+  const [expenseSearch, setExpenseSearch] = useState('')
   const { data: dreData, sheets, loading, error } = useDREData(year)
   const tableWrapperRef = useRef<HTMLDivElement>(null)
   const [variationHighlights, setVariationHighlights] = useState<VariationHighlight[] | null>(null)
   
   return (
-    <div className="min-h-screen flex flex-col bg-background-soft dark:bg-dark-background w-full">
+    <div className="h-screen flex flex-col bg-background-soft dark:bg-dark-background w-full overflow-hidden">
       <Header
-        companyName="Minha Empresa"
+        companyName="Demonstrativo de Performance (DRE Gerencial)"
         year={year}
         onYearChange={setYear}
+        expenseSearch={expenseSearch}
+        onExpenseSearchChange={setExpenseSearch}
         dreData={dreData}
         sheets={sheets}
         tableWrapperRef={tableWrapperRef}
         onHighlights={setVariationHighlights}
       />
       
-      <main className="flex-1 flex flex-col min-h-0 w-full max-w-full px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+      <main className="flex-1 min-h-0 flex flex-col w-full max-w-full px-4 sm:px-6 lg:px-8 py-6 sm:py-8 overflow-hidden">
         {error && (
-          <Card variant="elevated" className="mb-6 border-danger/20 bg-danger/5 shrink-0">
+          <Card variant="elevated" className="mb-6 border-danger/20 bg-danger/5">
             <CardContent className="p-6">
               <div className="flex items-center gap-3">
                 <AlertCircle className="h-5 w-5 text-danger" />
@@ -59,6 +62,7 @@ export default function Home() {
             <DRETable
               items={dreData}
               sheets={sheets}
+              expenseSearch={expenseSearch}
               variationHighlights={variationHighlights}
             />
           </div>

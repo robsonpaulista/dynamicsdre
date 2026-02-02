@@ -1,6 +1,6 @@
 'use client'
 
-import React from 'react'
+import React, { useRef, useEffect } from 'react'
 import { Card, CardContent } from '@/components/ui/Card'
 import { DRERow } from './DRERow'
 import type { DRERowData, VariationHighlight } from '@/types/dre'
@@ -8,11 +8,39 @@ import type { DRERowData, VariationHighlight } from '@/types/dre'
 interface DRETableProps {
   items: DRERowData[]
   sheets: string[]
+  /** Termo para buscar nas despesas (ex.: "aluguel" mostra grupos/contas que contenham o termo) */
+  expenseSearch?: string
   variationHighlights?: VariationHighlight[] | null
 }
 
+function filterItemsByExpenseSearch(items: DRERowData[], searchTerm: string): DRERowData[] {
+  const term = searchTerm.trim().toLowerCase()
+  if (!term) return items
+
+  return items.map((item) => {
+    if (item.codPlanoconta !== '8' || !item.children?.length) return item
+
+    const filteredGrupos = item.children
+      .map((grupo) => {
+        const grupoMatch = grupo.plano.toLowerCase().includes(term)
+        const contasMatch = grupo.children?.filter((c) => c.plano.toLowerCase().includes(term)) ?? []
+        const hasMatchingContas = contasMatch.length > 0
+
+        if (grupoMatch) {
+          return { ...grupo, children: grupo.children }
+        }
+        if (hasMatchingContas) {
+          return { ...grupo, children: contasMatch }
+        }
+        return null
+      })
+      .filter((g): g is DRERowData => g != null)
+
+    return { ...item, children: filteredGrupos }
+  })
+}
+
 function formatMonthName(month: string): string {
-  // Formatar mês de YYYY-MM para "MMM/YYYY" (ex: "2025-01" -> "Jan/2025")
   try {
     const [year, monthNum] = month.split('-')
     const monthNames = [
@@ -29,8 +57,10 @@ function formatMonthName(month: string): string {
   }
 }
 
-export function DRETable({ items, sheets, variationHighlights }: DRETableProps) {
-  if (items.length === 0 || sheets.length === 0) {
+export function DRETable({ items, sheets, expenseSearch = '', variationHighlights }: DRETableProps) {
+  const displayItems = filterItemsByExpenseSearch(items, expenseSearch)
+
+  if (displayItems.length === 0 || sheets.length === 0) {
     return (
       <Card variant="elevated">
         <CardContent className="p-12 text-center">
@@ -45,36 +75,55 @@ export function DRETable({ items, sheets, variationHighlights }: DRETableProps) 
   // Calcular receita operacional líquida por mês (COD 5) para % no tooltip
   const receitaPorMes = new Map<string, number>()
   sheets.forEach(month => {
-    const receitaLiquida = items
+    const receitaLiquida = displayItems
       .filter(item => item.codPlanoconta === '5')
       .reduce((sum, item) => sum + (item.valuesBySheet[month] || 0), 0)
     receitaPorMes.set(month, receitaLiquida)
   })
+
+  const scrollRef = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    scrollRef.current?.scrollTo(0, 0)
+  }, [sheets])
   
+  const colPlano = 280
+  const colMes = 120
+  const tableMinWidth = colPlano + (sheets.length + 1) * colMes
+
   return (
-    <Card variant="elevated" className="overflow-hidden w-full flex-1 min-h-0 flex flex-col">
-      <CardContent className="p-0 flex-1 min-h-0 flex flex-col">
-        {/* Container com rolagem própria: usa todo o espaço vertical disponível */}
-        <div className="overflow-auto w-full flex-1 min-h-0">
-          <table className="w-full" style={{ tableLayout: 'auto' }}>
-            <thead className="bg-background-soft dark:bg-dark-primary-surface border-b border-border dark:border-dark-border sticky top-0 z-20">
-              <tr>
-                <th className="px-4 py-3 text-left text-sm font-semibold text-text-primary dark:text-dark-text-primary sticky left-0 z-30 w-[250px] bg-background-soft dark:bg-dark-primary-surface shadow-[4px_0_6px_-2px_rgba(0,0,0,0.06)] dark:shadow-[4px_0_6px_-2px_rgba(0,0,0,0.25)]">
-                  Plano de Contas
+    <div className="w-full flex-1 min-h-0 relative border border-border dark:border-dark-border rounded-card bg-background dark:bg-dark-card shadow-card-light dark:shadow-card-dark overflow-hidden">
+      {/* Scroll com altura definida por absolute — cabeçalho e tabela rolam juntos */}
+      <div
+        ref={scrollRef}
+        className="absolute inset-0 overflow-auto overscroll-contain"
+        style={{ WebkitOverflowScrolling: 'touch' }}
+      >
+        {/* Uma única tabela: thead sticky + tbody — colunas sempre alinhadas */}
+        <table className="border-collapse w-full" style={{ tableLayout: 'fixed', minWidth: tableMinWidth }}>
+          <colgroup>
+            <col style={{ width: colPlano }} />
+            {sheets.map((month) => (
+              <col key={month} style={{ width: colMes }} />
+            ))}
+            <col style={{ width: colMes }} />
+          </colgroup>
+          <thead className="bg-primary border-b border-primary-hover">
+            <tr>
+              <th className="sticky top-0 z-10 bg-primary px-4 py-3 text-left text-sm font-semibold text-white whitespace-nowrap border-b border-primary-hover" style={{ width: colPlano }}>
+                Plano de Contas
+              </th>
+              {sheets.map((month) => (
+                <th key={month} className="sticky top-0 z-10 bg-primary px-4 py-3 text-right text-sm font-semibold text-white whitespace-nowrap border-b border-primary-hover" style={{ width: colMes }}>
+                  {formatMonthName(month)}
                 </th>
-                {/* Colunas dinâmicas para cada mês */}
-                {sheets.map((month) => (
-                  <th key={month} className="px-4 py-3 text-right text-sm font-semibold text-text-primary dark:text-dark-text-primary whitespace-nowrap">
-                    {formatMonthName(month)}
-                  </th>
-                ))}
-                <th className="px-4 py-3 text-right text-sm font-semibold text-text-primary dark:text-dark-text-primary whitespace-nowrap">
-                  Acumulado
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {items.map((item, index) => {
+              ))}
+              <th className="sticky top-0 z-10 bg-primary px-4 py-3 text-right text-sm font-semibold text-white whitespace-nowrap border-b border-primary-hover" style={{ width: colMes }}>
+                Acumulado
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+              {displayItems.map((item, index) => {
                 // Determinar tipo para cores
                 const cod = item.codPlanoconta.toLowerCase()
                 const plano = item.plano.toLowerCase()
@@ -90,29 +139,9 @@ export function DRETable({ items, sheets, variationHighlights }: DRETableProps) 
                   itemType = 'result'
                 }
                 
-                const getTypeStyles = () => {
-                  // Participações (COD 12) sempre usa cor padrão, não é totalizador
-                  if (item.codPlanoconta === '12') {
-                    return 'text-text-primary dark:text-dark-text-primary'
-                  }
-                  
-                  // Saldo (COD 11) e Resultado Líquido (COD 13): cor do tema (primary)
-                  if (item.codPlanoconta === '11' || item.codPlanoconta === '13') {
-                    return 'text-primary dark:text-dark-primary'
-                  }
-                  
-                  switch (itemType) {
-                    case 'revenue':
-                      return 'text-success dark:text-dark-success'
-                    case 'cost':
-                    case 'expense':
-                      return 'text-text-secondary dark:text-dark-text-secondary'
-                    case 'result':
-                      return 'text-primary dark:text-dark-accent'
-                    default:
-                      return 'text-text-primary dark:text-dark-text-primary'
-                  }
-                }
+                // Nomes dos planos de contas: sempre cor preta padrão
+                const getTypeStyles = () =>
+                  'text-text-primary dark:text-dark-text-primary'
                 
                 const getValueStyles = (value: number) => {
                   // Participações (COD 12) sempre usa cor padrão, não é totalizador
@@ -148,14 +177,14 @@ export function DRETable({ items, sheets, variationHighlights }: DRETableProps) 
                     getTypeStyles={getTypeStyles}
                     getValueStyles={getValueStyles}
                     variationHighlights={variationHighlights ?? undefined}
-                    initialExpanded={hasHighlights && (item.codPlanoconta === '8' || item.codPlanoconta.startsWith('8.'))}
+                    expenseSearch={expenseSearch}
+                    initialExpanded={(hasHighlights || !!expenseSearch.trim()) && (item.codPlanoconta === '8' || item.codPlanoconta.startsWith('8.'))}
                   />
                 )
               })}
-            </tbody>
-          </table>
-        </div>
-      </CardContent>
-    </Card>
+          </tbody>
+        </table>
+      </div>
+    </div>
   )
 }

@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import { X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from './Button'
@@ -9,9 +10,11 @@ interface ModalProps {
   title: string
   children: React.ReactNode
   className?: string
+  /** 'primary' = cabeçalho laranja (tema) */
+  headerVariant?: 'default' | 'primary'
 }
 
-export function Modal({ isOpen, onClose, title, children, className }: ModalProps) {
+export function Modal({ isOpen, onClose, title, children, className, headerVariant = 'default' }: ModalProps) {
   // Fechar modal com ESC
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
@@ -34,7 +37,7 @@ export function Modal({ isOpen, onClose, title, children, className }: ModalProp
 
   if (!isOpen) return null
 
-  return (
+  const modalContent = (
     <div 
       className="fixed inset-0 z-[200] flex items-center justify-center p-4"
       onClick={onClose}
@@ -58,15 +61,27 @@ export function Modal({ isOpen, onClose, title, children, className }: ModalProp
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-border dark:border-dark-border">
-          <h2 className="text-lg font-semibold text-text-primary dark:text-dark-text-primary">
+        <div
+          className={cn(
+            'flex items-center justify-between p-6 border-b',
+            headerVariant === 'primary'
+              ? 'bg-primary border-primary-hover'
+              : 'border-border dark:border-dark-border'
+          )}
+        >
+          <h2
+            className={cn(
+              'text-sm font-semibold',
+              headerVariant === 'primary' ? 'text-white' : 'text-text-primary dark:text-dark-text-primary'
+            )}
+          >
             {title}
           </h2>
           <Button
             variant="ghost"
             size="sm"
             onClick={onClose}
-            className="h-8 w-8 p-0"
+            className={headerVariant === 'primary' ? 'h-8 w-8 p-0 text-white hover:bg-white/20' : 'h-8 w-8 p-0'}
             aria-label="Fechar"
           >
             <X className="h-4 w-4" />
@@ -80,4 +95,8 @@ export function Modal({ isOpen, onClose, title, children, className }: ModalProp
       </div>
     </div>
   )
+
+  return typeof document !== 'undefined'
+    ? createPortal(modalContent, document.body)
+    : null
 }

@@ -10,48 +10,48 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Light Mode - Paleta DynamicsADM
+        // Paleta DesignHire: laranja vibrante como destaque (modo claro e escuro)
         primary: {
-          DEFAULT: '#00B299', // Teal/Turquesa
-          hover: '#009980',
+          DEFAULT: '#F97316', // Laranja vibrante (accent)
+          hover: '#EA580C',
+          soft: '#FDBA74', // Laranja claro
         },
         secondary: {
-          DEFAULT: '#F5F5F5', // Cinza claro
+          DEFAULT: '#FAFAFA', // Surface light
         },
         accent: {
-          DEFAULT: '#FF8C00', // Laranja
+          DEFAULT: '#F97316', // Mesmo laranja
         },
         background: {
           DEFAULT: '#FFFFFF',
-          soft: '#F5F5F5',
+          soft: '#F5F5F5', // Cinza muito claro (modo claro)
         },
         border: {
           DEFAULT: '#E5E5E5',
         },
         text: {
-          primary: '#333333',
-          secondary: '#666666',
+          primary: '#1a1a1a',
+          secondary: '#6b6b6b',
         },
-        success: '#00B299', // Usando teal para success
-        warning: '#FF8C00', // Laranja
-        danger: '#DC2626',
-        
-        // Dark Mode - Paleta DynamicsADM
+        success: '#22c55e',
+        warning: '#f59e0b',
+        danger: '#ef4444',
+        // Dark Mode — Mesma paleta: fundos escuros + laranja vibrante
         dark: {
-          primary: '#3B82F6', // Azul (217.2 91.2% 59.8%)
-          'primary-surface': '#1E293B',
-          secondary: '#1E293B',
-          accent: '#FF8C00',
-          background: '#0F172A', // Azul escuro (222.2 84% 4.9%)
-          card: '#1E293B',
-          border: '#334155',
+          primary: '#F97316',
+          'primary-surface': '#2d2d2d',
+          secondary: '#2d2d2d',
+          accent: '#F97316',
+          background: '#1a1a1a',
+          card: '#2d2d2d',
+          border: '#404040',
           text: {
-            primary: '#F1F5F9',
-            secondary: '#CBD5E1',
+            primary: '#f5f5f5',
+            secondary: '#c0c0c0',
           },
-          success: '#00B299',
-          warning: '#FF8C00',
-          danger: '#EF4444',
+          success: '#22c55e',
+          warning: '#f59e0b',
+          danger: '#ef4444',
         },
       },
       fontFamily: {

@@ -18,6 +18,8 @@ export function DREItem({ item, level = 0, totalRevenue }: DREItemProps) {
   const hasChildren = item.children && item.children.length > 0
   const percent = item.percent ?? (totalRevenue > 0 ? (item.value / totalRevenue) * 100 : 0)
   
+  // Nomes dos planos de contas: sempre cor preta padrão
+  const labelClass = 'text-text-primary dark:text-dark-text-primary'
   const getTypeStyles = () => {
     switch (item.type) {
       case 'revenue':
@@ -62,7 +64,7 @@ export function DREItem({ item, level = 0, totalRevenue }: DREItemProps) {
                 className={cn(
                   'text-sm sm:text-base font-medium truncate',
                   level === 0 && 'font-semibold',
-                  getTypeStyles()
+                  labelClass
                 )}
                 style={{ paddingLeft: hasChildren ? 0 : level * 20 }}
               >
