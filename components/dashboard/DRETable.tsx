@@ -11,6 +11,16 @@ interface DRETableProps {
   /** Termo para buscar nas despesas (ex.: "aluguel" mostra grupos/contas que contenham o termo) */
   expenseSearch?: string
   variationHighlights?: VariationHighlight[] | null
+  /** IDs dos itens excluídos */
+  excludedItems?: string[]
+  /** Função para excluir um item */
+  onExcludeItem?: (itemId: string) => Promise<void>
+  /** Função para restaurar um item excluído */
+  onRestoreItem?: (itemId: string) => Promise<void>
+  /** Função para verificar se um item está excluído */
+  isItemExcluded?: (itemId: string) => boolean
+  /** Função para mover um item para outro grupo */
+  onMoveItem?: (codPlanoconta: string, fromGrupo: string, toGrupo: string) => Promise<void>
 }
 
 function filterItemsByExpenseSearch(items: DRERowData[], searchTerm: string): DRERowData[] {
@@ -57,7 +67,17 @@ function formatMonthName(month: string): string {
   }
 }
 
-export function DRETable({ items, sheets, expenseSearch = '', variationHighlights }: DRETableProps) {
+export function DRETable({ 
+  items, 
+  sheets, 
+  expenseSearch = '', 
+  variationHighlights,
+  excludedItems = [],
+  onExcludeItem,
+  onRestoreItem,
+  isItemExcluded,
+  onMoveItem
+}: DRETableProps) {
   const displayItems = filterItemsByExpenseSearch(items, expenseSearch)
 
   if (displayItems.length === 0 || sheets.length === 0) {
@@ -71,6 +91,13 @@ export function DRETable({ items, sheets, expenseSearch = '', variationHighlight
       </Card>
     )
   }
+  
+  // Extrair grupos de despesas (filhos diretos de COD 8) para o recurso de mover
+  const despesasItem = items.find(i => i.codPlanoconta === '8')
+  const despesaGrupos = despesasItem?.children?.map(g => ({
+    codPlanoconta: g.codPlanoconta,
+    plano: g.plano
+  })) ?? []
   
   // Calcular receita operacional líquida por mês (COD 5) para % no tooltip
   const receitaPorMes = new Map<string, number>()
@@ -179,6 +206,12 @@ export function DRETable({ items, sheets, expenseSearch = '', variationHighlight
                     variationHighlights={variationHighlights ?? undefined}
                     expenseSearch={expenseSearch}
                     initialExpanded={(hasHighlights || !!expenseSearch.trim()) && (item.codPlanoconta === '8' || item.codPlanoconta.startsWith('8.'))}
+                    excludedItems={excludedItems}
+                    onExcludeItem={onExcludeItem}
+                    onRestoreItem={onRestoreItem}
+                    isItemExcluded={isItemExcluded}
+                    despesaGrupos={despesaGrupos}
+                    onMoveItem={onMoveItem}
                   />
                 )
               })}

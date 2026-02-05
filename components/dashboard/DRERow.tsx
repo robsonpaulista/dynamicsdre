@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import { formatCurrency } from '@/lib/utils'
 import { cn } from '@/lib/utils'
-import { ChevronRight, ChevronDown, Info, TrendingUp, TrendingDown } from 'lucide-react'
+import { ChevronRight, ChevronDown, Info, TrendingUp, TrendingDown, X, ArrowRightLeft } from 'lucide-react'
 import { Modal } from '@/components/ui/Modal'
 import type { DRERowData, VariationHighlight } from '@/types/dre'
 
@@ -113,6 +113,12 @@ function SparklineChart({
   )
 }
 
+/** Grupo de despesas disponível para mover itens */
+interface DespesaGrupo {
+  codPlanoconta: string
+  plano: string
+}
+
 interface DRERowProps {
   item: DRERowData
   sheets: string[]
@@ -124,9 +130,41 @@ interface DRERowProps {
   variationHighlights?: VariationHighlight[]
   expenseSearch?: string
   initialExpanded?: boolean
+  /** Caminho do item pai (para construir o itemId completo) */
+  parentPath?: string
+  /** IDs dos itens excluídos */
+  excludedItems?: string[]
+  /** Função para excluir um item */
+  onExcludeItem?: (itemId: string) => Promise<void>
+  /** Função para restaurar um item excluído */
+  onRestoreItem?: (itemId: string) => Promise<void>
+  /** Função para verificar se um item está excluído */
+  isItemExcluded?: (itemId: string) => boolean
+  /** Lista de grupos de despesas disponíveis para mover */
+  despesaGrupos?: DespesaGrupo[]
+  /** Função para mover um item para outro grupo */
+  onMoveItem?: (codPlanoconta: string, fromGrupo: string, toGrupo: string) => Promise<void>
 }
 
-export function DRERow({ item, sheets, receitaPorMes, level = 0, index = 0, getTypeStyles, getValueStyles, variationHighlights, expenseSearch, initialExpanded }: DRERowProps) {
+export function DRERow({ 
+  item, 
+  sheets, 
+  receitaPorMes, 
+  level = 0, 
+  index = 0, 
+  getTypeStyles, 
+  getValueStyles, 
+  variationHighlights, 
+  expenseSearch, 
+  initialExpanded,
+  parentPath = '',
+  excludedItems = [],
+  onExcludeItem,
+  onRestoreItem,
+  isItemExcluded,
+  despesaGrupos = [],
+  onMoveItem
+}: DRERowProps) {
   // Despesas Fixas/Variáveis (COD 8) e Participações (COD 12) começam recolhidos; demais níveis raiz expandidos
   const startsExpanded = (level < 1 && item.codPlanoconta !== '8' && item.codPlanoconta !== '12') || !!initialExpanded
   const [isExpanded, setIsExpanded] = useState(startsExpanded)
@@ -135,9 +173,58 @@ export function DRERow({ item, sheets, receitaPorMes, level = 0, index = 0, getT
   }, [initialExpanded])
   const [modalOpen, setModalOpen] = useState(false)
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null)
+  const [isExcluding, setIsExcluding] = useState(false)
+  const [moveModalOpen, setMoveModalOpen] = useState(false)
+  const [isMoving, setIsMoving] = useState(false)
   const hasChildren = item.children && item.children.length > 0
   const hasLancamentos = item.lancamentos && item.lancamentos.length > 0
   const isSubtotal = item.subtotal === 1
+  
+  // Construir o ID do item para exclusão
+  const itemId = parentPath ? `${parentPath}.${item.plano}` : item.codPlanoconta
+  
+  // Identificar o grupo atual (para mover)
+  const currentGrupo = parentPath.startsWith('8.') ? parentPath.split('.').slice(0, 2).join('.') : 
+                       item.codPlanoconta.startsWith('8.') && !item.codPlanoconta.includes('.', 2) ? item.codPlanoconta : ''
+  
+  // Verificar se pode ser excluído (despesas, participações e seus filhos, não subtotais)
+  const isDespesaOrChild = item.codPlanoconta.startsWith('8.') || parentPath.startsWith('8')
+  const isParticipacaoOrChild = item.codPlanoconta.startsWith('12.') || parentPath.startsWith('12')
+  const canExclude = (
+    (isDespesaOrChild || isParticipacaoOrChild) && 
+    !isSubtotal &&
+    onExcludeItem
+  )
+  
+  // Verificar se pode ser movido (apenas contas de despesas folha, não grupos)
+  const canMove = (
+    parentPath.startsWith('8.') &&  // É filho de um grupo de despesas
+    !hasChildren &&                  // Não tem filhos (é conta folha)
+    !isSubtotal &&                   // Não é subtotal
+    onMoveItem &&
+    despesaGrupos.length > 0
+  )
+  
+  const handleExclude = async () => {
+    if (!onExcludeItem || isExcluding) return
+    setIsExcluding(true)
+    try {
+      await onExcludeItem(itemId)
+    } finally {
+      setIsExcluding(false)
+    }
+  }
+  
+  const handleMove = async (toGrupo: string) => {
+    if (!onMoveItem || isMoving || !currentGrupo) return
+    setIsMoving(true)
+    try {
+      await onMoveItem(item.codPlanoconta, currentGrupo, toGrupo)
+      setMoveModalOpen(false)
+    } finally {
+      setIsMoving(false)
+    }
+  }
   
   // Verificar se é despesa (COD 8) ou participação (COD 12) ou filhos deles
   const isDespesaOuParticipacao = item.codPlanoconta === '8' || 
@@ -187,7 +274,7 @@ export function DRERow({ item, sheets, receitaPorMes, level = 0, index = 0, getT
       <tr 
         key={item.codPlanoconta || index}
         className={cn(
-          'border-b border-border dark:border-dark-border hover:bg-background-soft dark:hover:bg-dark-primary-surface transition-colors',
+          'border-b border-border dark:border-dark-border hover:bg-background-soft dark:hover:bg-dark-primary-surface transition-colors group/row',
           level > 0 && 'bg-background-soft/50 dark:bg-dark-primary-surface/30',
           isSubtotal && 'font-semibold'
         )}
@@ -218,7 +305,7 @@ export function DRERow({ item, sheets, receitaPorMes, level = 0, index = 0, getT
             )}
             <span
               className={cn(
-                'text-xs',
+                'text-xs flex-1',
                 isSubtotal && 'font-semibold',
                 level === 0 && 'font-semibold',
                 getTypeStyles()
@@ -227,6 +314,38 @@ export function DRERow({ item, sheets, receitaPorMes, level = 0, index = 0, getT
             >
               {item.plano || item.codPlanoconta}
             </span>
+            {/* Botão de mover para outro grupo */}
+            {canMove && (
+              <button
+                onClick={() => setMoveModalOpen(true)}
+                disabled={isMoving}
+                className={cn(
+                  'p-1 rounded hover:bg-primary/10 dark:hover:bg-primary/20 transition-colors opacity-0 group-hover/row:opacity-100',
+                  'text-text-secondary dark:text-dark-text-secondary hover:text-primary dark:hover:text-dark-primary',
+                  isMoving && 'cursor-wait opacity-50'
+                )}
+                title="Mover para outro grupo"
+                aria-label={`Mover ${item.plano || item.codPlanoconta} para outro grupo`}
+              >
+                <ArrowRightLeft className="h-3.5 w-3.5" />
+              </button>
+            )}
+            {/* Botão de excluir para despesas */}
+            {canExclude && (
+              <button
+                onClick={handleExclude}
+                disabled={isExcluding}
+                className={cn(
+                  'p-1 rounded hover:bg-danger/10 dark:hover:bg-danger/20 transition-colors opacity-0 group-hover/row:opacity-100',
+                  'text-text-secondary dark:text-dark-text-secondary hover:text-danger dark:hover:text-dark-danger',
+                  isExcluding && 'cursor-wait opacity-50'
+                )}
+                title="Excluir da DRE"
+                aria-label={`Excluir ${item.plano || item.codPlanoconta} da DRE`}
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            )}
           </div>
         </td>
         
@@ -451,8 +570,50 @@ export function DRERow({ item, sheets, receitaPorMes, level = 0, index = 0, getT
           variationHighlights={variationHighlights}
           expenseSearch={expenseSearch}
           initialExpanded={!!((variationHighlights?.length || expenseSearch?.trim()) && child.codPlanoconta.startsWith('8.'))}
+          parentPath={itemId}
+          excludedItems={excludedItems}
+          onExcludeItem={onExcludeItem}
+          onRestoreItem={onRestoreItem}
+          isItemExcluded={isItemExcluded}
+          despesaGrupos={despesaGrupos}
+          onMoveItem={onMoveItem}
         />
       ))}
+      
+      {/* Modal para mover despesa para outro grupo */}
+      {canMove && (
+        <Modal
+          isOpen={moveModalOpen}
+          onClose={() => setMoveModalOpen(false)}
+          title={`Mover: ${item.plano || item.codPlanoconta}`}
+          headerVariant="primary"
+        >
+          <div className="space-y-3">
+            <p className="text-sm text-text-secondary dark:text-dark-text-secondary mb-4">
+              Selecione o grupo de destino para mover esta despesa:
+            </p>
+            {despesaGrupos
+              .filter(g => g.codPlanoconta !== currentGrupo) // Não mostrar o grupo atual
+              .map((grupo) => (
+                <button
+                  key={grupo.codPlanoconta}
+                  onClick={() => handleMove(grupo.codPlanoconta)}
+                  disabled={isMoving}
+                  className={cn(
+                    'w-full text-left p-3 rounded-lg border border-border dark:border-dark-border',
+                    'hover:bg-primary/5 dark:hover:bg-primary/10 hover:border-primary dark:hover:border-dark-primary',
+                    'transition-colors',
+                    isMoving && 'cursor-wait opacity-50'
+                  )}
+                >
+                  <span className="text-sm font-medium text-text-primary dark:text-dark-text-primary">
+                    {grupo.plano}
+                  </span>
+                </button>
+              ))}
+          </div>
+        </Modal>
+      )}
       
       {/* Modal para despesas e participações */}
       {isDespesaOuParticipacao && selectedMonth && (
